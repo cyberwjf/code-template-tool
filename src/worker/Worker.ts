@@ -51,7 +51,7 @@ export default class Worker {
 
         const { variables } = userInputResponse;
 
-        getConceptName(variables);
+        await getConceptName();
 
         if (variables) {
             template.assignVariables(variables);
