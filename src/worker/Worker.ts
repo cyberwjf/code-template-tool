@@ -8,6 +8,7 @@ import TemplateTable from '../model/TemplateTable';
 import CodesGenerator from './CodesGenerator';
 import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
+import { getConceptName } from './mixRestApi';
 
 export default class Worker {
     public static getInstance(): Worker {
@@ -49,6 +50,9 @@ export default class Worker {
         }
 
         const { variables } = userInputResponse;
+
+        getConceptName(variables);
+
         if (variables) {
             template.assignVariables(variables);
         }
