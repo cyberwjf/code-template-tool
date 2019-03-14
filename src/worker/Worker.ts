@@ -8,7 +8,7 @@ import TemplateTable from '../model/TemplateTable';
 import CodesGenerator from './CodesGenerator';
 import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
-import { getConceptName } from './mixRestApi';
+import { getRefinementNames } from './mixRestApi';
 
 export default class Worker {
     public static getInstance(): Worker {
@@ -40,6 +40,7 @@ export default class Worker {
         }
 
         template.reset();
+        /*
         const userInputResponse: IUserInputResponseDTO | undefined = await getUserInput(
             template,
             destDir,
@@ -48,15 +49,25 @@ export default class Worker {
         if (!userInputResponse) {
             return;
         }
+        */
 
-        const { variables } = userInputResponse;
+        // const userInputResponse: IUserInputResponseDTO | undefined = undefined;
 
-        await getConceptName();
+        // const { variables } = userInputResponse;
 
+        let refinements = await getRefinementNames();
+        if (!refinements) {
+            return;
+        }
+
+        /*
         if (variables) {
             template.assignVariables(variables);
         }
-        const destDirPath = userInputResponse.destDirAbsolutePath || destDir;
+        */
+
+        // const destDirPath = userInputResponse.destDirAbsolutePath || destDir;
+        const destDirPath = '';
         const codesGenerator = new CodesGenerator(template, destDirPath);
         await codesGenerator.execute();
     }

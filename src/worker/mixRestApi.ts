@@ -1,7 +1,13 @@
 import * as request from "request-promise-native";
 import jsonpath = require("jsonpath");
 
+function getApiKey() : string {
+    return 'fWtdL7bVQKvnxpIogC9F1krCIZBvEUk2toNzwdIm6r0';
+}
 
+function getProjectId() : string {
+    return '1059';
+}
 
 function removeDuplicates(arr: Object[]): Object[] {
     for (let i = 0; i < arr.length; i++) {
@@ -25,15 +31,15 @@ function getRefinements(res : any) : any {
     return refinements;
 }
 
-export function getConceptName() : Promise<any> | undefined {
-    const baseUrl = 'http://10.56.10.112:443/api/v1/projects/1059/dialogs/interactions';
-    const queryString = '';
+export function getRefinementNames() : Promise<any> | undefined {
+    const baseUrl = 'http://10.56.10.112:443/api/v1/projects/';
+    const queryString = '/dialogs/interactions';
     // const queryString = '/20365492/localizedInteractions/20365493/escalationLevels/20365494/randomizations/20365507/facets/20365510';
     let options = {
         method: 'GET',
-        uri: baseUrl + queryString,
+        uri: baseUrl + getProjectId() + queryString,
         headers: {
-            'X-Bolt-ApiKey': 'fWtdL7bVQKvnxpIogC9F1krCIZBvEUk2toNzwdIm6r0',
+            'X-Bolt-ApiKey': getApiKey(),
             'Content-Type': 'Application/json'
         },
         json: true
