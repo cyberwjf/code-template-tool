@@ -21,23 +21,24 @@ function removeDuplicates(arr: Object[]): Object[] {
     return arr;
 }
 
-function getRefinements(res : any) : any {
+export function getConcepts(res : any, type: string) : any {
     let facets = jsonpath.query(res, "$..facets.*");
     facets = facets.filter(function (object) {
-        return object.type === 'refinement' && object.content !== '';
+        return object.type === type && object.content !== '';
     });
     let refinements = jsonpath.query(facets, "$[*].content");
     refinements = removeDuplicates(refinements);
     return refinements;
 }
 
-export function getRefinementNames() : Promise<any> | undefined {
-    const baseUrl = 'http://10.56.10.112:443/api/v1/projects/';
-    const queryString = '/dialogs/interactions';
+export function getDialogInteractions() : Promise<any> | undefined {
+    const projectId = getProjectId();
+    const baseUrl = `http://10.56.10.112:443/api/v1/projects/${projectId}/dialogs/interactions`;
+    const queryString = '';
     // const queryString = '/20365492/localizedInteractions/20365493/escalationLevels/20365494/randomizations/20365507/facets/20365510';
     let options = {
         method: 'GET',
-        uri: baseUrl + getProjectId() + queryString,
+        uri: baseUrl + queryString,
         headers: {
             'X-Bolt-ApiKey': getApiKey(),
             'Content-Type': 'Application/json'
@@ -47,7 +48,7 @@ export function getRefinementNames() : Promise<any> | undefined {
     return new Promise<any>(
         resolve => {
             request(options)
-                .then((res) => {resolve(getRefinements(res));})
+                .then((res) => {resolve(res);})
                 .catch((err) => console.log("Wrong!"));
         });
 }

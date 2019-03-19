@@ -3,12 +3,12 @@ import { existsSync } from 'fs';
 import { isDirectory, mkdirp } from '../utils/fs';
 import { NotDirError } from '../utils/error';
 import config from '../utils/config';
-import { ITemplateTable, IUserInputResponseDTO } from '../model/types';
+import { ITemplateTable, IUserInputResponseDTO, IVariableDTO, IIdentifierStyleDTO } from '../model/types';
 import TemplateTable from '../model/TemplateTable';
 import CodesGenerator from './CodesGenerator';
 import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
-import { getRefinementNames } from './mixRestApi';
+import { getDialogInteractions, getConcepts } from './mixRestApi';
 
 export default class Worker {
     public static getInstance(): Worker {
@@ -32,44 +32,79 @@ export default class Worker {
         this.disposeTemplates();
     }
 
+    private getDomainName(destDir: string) {
+        return destDir.split("\\").pop();
+    }
+
     public async generateCodes(destDir: string) {
         const { templateTable } = this;
+        
+        const style : IIdentifierStyleDTO = {case: "AUTO", keepUpperCase: false, noTransformation: false, prefix: "", suffix: ""};
+
         const template = templateTable.size() === 1 ? templateTable.entries()[0] : await selectTemplate(templateTable);
         if (!template) {
             return;
         }
 
         template.reset();
-        /*
-        const userInputResponse: IUserInputResponseDTO | undefined = await getUserInput(
-            template,
-            destDir,
-            this.extensionContext
-        );
-        if (!userInputResponse) {
-            return;
+
+        if (template['name'] === "Refinement Template" || template['name'] === "Query Template") {
+            let res = await getDialogInteractions();
+            let concepts : string[] | undefined = undefined;
+
+            if (template['name'] === "Refinement Template") {
+                concepts = getConcepts(res, 'refinement');
+            } else if (template['name'] === "Query Template") {
+                concepts = getConcepts(res, 'query');
+            } else {
+                return;
+            }
+            if (!concepts) {
+                return;
+            }
+
+            for (let concept of concepts) {
+                let variables: IVariableDTO[] = [ {
+                    name: 'conceptName',
+                    style: style,
+                    value: concept
+                },
+                {
+                    name: 'domainName',
+                    style: style,
+                    value: this.getDomainName(destDir)
+                }
+
+                ];
+
+                if (variables) {
+                    template.assignVariables(variables);
+                }
+
+                const destDirPath = destDir;
+                const codesGenerator = new CodesGenerator(template, destDirPath);
+                await codesGenerator.execute();
+            }
+        } else {
+
+            const userInputResponse: IUserInputResponseDTO | undefined = await getUserInput(
+                template,
+                destDir,
+                this.extensionContext
+            );
+            if (!userInputResponse) {
+                return;
+            }
+
+            const { variables } = userInputResponse;
+
+            if (variables) {
+                template.assignVariables(variables);
+            }
+            const destDirPath = userInputResponse.destDirAbsolutePath || destDir;
+            const codesGenerator = new CodesGenerator(template, destDirPath);
+            await codesGenerator.execute();
         }
-        */
-
-        // const userInputResponse: IUserInputResponseDTO | undefined = undefined;
-
-        // const { variables } = userInputResponse;
-
-        let refinements = await getRefinementNames();
-        if (!refinements) {
-            return;
-        }
-
-        /*
-        if (variables) {
-            template.assignVariables(variables);
-        }
-        */
-
-        // const destDirPath = userInputResponse.destDirAbsolutePath || destDir;
-        const destDirPath = '';
-        const codesGenerator = new CodesGenerator(template, destDirPath);
-        await codesGenerator.execute();
     }
 
     private constructor() {}
