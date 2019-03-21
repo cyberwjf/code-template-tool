@@ -9,6 +9,7 @@ import CodesGenerator from './CodesGenerator';
 import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
 import { getDialogInteractions, getConcepts } from './mixRestApi';
+import { showErrMsg } from '../utils/message';
 
 export default class Worker {
     public static getInstance(): Worker {
@@ -32,7 +33,7 @@ export default class Worker {
         this.disposeTemplates();
     }
 
-    private getDomainName(destDir: string) {
+    private getDomainName(destDir: string): string | undefined {
         return destDir.split("\\").pop();
     }
 
@@ -49,7 +50,13 @@ export default class Worker {
         template.reset();
 
         if (template['name'] === "Refinement Template" || template['name'] === "Query Template") {
-            let res = await getDialogInteractions();
+            let domain = this.getDomainName(destDir);
+            if (!domain) {
+                showErrMsg("Please select a valid domain folder.");
+                return;
+            }
+
+            let res = await getDialogInteractions(domain);
             let concepts : string[] | undefined = undefined;
 
             if (template['name'] === "Refinement Template") {

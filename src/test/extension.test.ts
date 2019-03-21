@@ -15,7 +15,7 @@ import { getDialogInteractions, getConcepts } from '../worker/mixRestApi';
 // Defines a Mocha test suite to group tests of similar kind together
 describe('Extension Tests', function() {
     it('Mix RESTful API Test', async function() {
-        let res = await getDialogInteractions();
+        let res = await getDialogInteractions('emotion_detection');
         let refinements = getConcepts(res, 'refinement');
         assert.equal(refinements[0], "FIND_GAS_STATION_NEARBY");
         assert.equal(refinements[1], "START_NTT");

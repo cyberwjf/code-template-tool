@@ -7,6 +7,7 @@ import { FileAlreadyExistsError } from '../utils/error';
 import { trimStart, trimEnd, escapeRegExpSpecialChars } from '../utils/string';
 import config from '../utils/config';
 import { ITemplate, IVariableTable } from '../model/types';
+import { showInfoMsg } from '../utils/message';
 
 export default class CodesGenerator {
     private _template: ITemplate;
@@ -59,7 +60,8 @@ export default class CodesGenerator {
             );
         } else {
             if(exist) {
-                throw new FileAlreadyExistsError(destPath);
+                showInfoMsg(destPath + " already Exists!");
+                // throw new FileAlreadyExistsError(destPath);
             }
             await this.generateFile(srcPath, destPath);
         }
