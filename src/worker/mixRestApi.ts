@@ -3,21 +3,23 @@ import jsonpath = require("jsonpath");
 import { getWorkspacePath } from "../utils/path";
 import config from "../utils/config";
 import { readFileSync } from "fs";
+import ini = require("ini");
 
 function getApiKey() : string {
-    return 'fWtdL7bVQKvnxpIogC9F1krCIZBvEUk2toNzwdIm6r0';
+    const workspacePath = getWorkspacePath();
+    const credentialsPath = workspacePath + "\\..\\mix\\python\\credentials.local";
+    const encoding = config.encoding;
+    const credentials = ini.parse(readFileSync(credentialsPath, encoding));
+    return credentials.Edge.api_key;
 }
 
 function getProjectId(domain : string | undefined) {
     if (!domain) {
         return '';
     }
-    let m = new Map<string, string>();
-    m.set("emotion_detection", "emotion");
     
-    let mixDomainName = m.get(domain);
-    let workspacePath = getWorkspacePath();
-    let pidPath = workspacePath + "\\..\\mix\\domains\\" + mixDomainName + "\\id.txt";
+    const workspacePath = getWorkspacePath();
+    const pidPath = workspacePath + "\\..\\mix\\domains\\" + domain + "\\id.txt";
     const encoding = config.encoding;
     const content = readFileSync(pidPath, { encoding });
 
@@ -51,13 +53,15 @@ export async function getDialogInteractions(domain : string | undefined) : Promi
 
     let baseUrl = `http://10.56.10.112:443/api/v1/projects/${projectId}/dialogs/interactions`;
 
+    const apiKey = getApiKey();
+
     const queryString = '';
     // const queryString = '/20365492/localizedInteractions/20365493/escalationLevels/20365494/randomizations/20365507/facets/20365510';
     let options = {
         method: 'GET',
         uri: baseUrl + queryString,
         headers: {
-            'X-Bolt-ApiKey': getApiKey(),
+            'X-Bolt-ApiKey': apiKey,
             'Content-Type': 'Application/json'
         },
         json: true

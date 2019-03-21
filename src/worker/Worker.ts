@@ -1,4 +1,4 @@
-import { workspace, ConfigurationChangeEvent, Disposable, ExtensionContext } from 'vscode';
+import { workspace, ConfigurationChangeEvent, Disposable, ExtensionContext} from 'vscode';
 import { existsSync } from 'fs';
 import { isDirectory, mkdirp } from '../utils/fs';
 import { NotDirError } from '../utils/error';
@@ -9,7 +9,7 @@ import CodesGenerator from './CodesGenerator';
 import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
 import { getDialogInteractions, getConcepts } from './mixRestApi';
-import { showErrMsg } from '../utils/message';
+import { showErrMsg, showInfoMsg } from '../utils/message';
 
 export default class Worker {
     public static getInstance(): Worker {
@@ -90,7 +90,11 @@ export default class Worker {
 
                 const destDirPath = destDir;
                 const codesGenerator = new CodesGenerator(template, destDirPath);
-                await codesGenerator.execute();
+                try {
+                    await codesGenerator.execute();
+                } catch (e) {
+                    showInfoMsg("File already exists!");
+                }
             }
         } else {
 
