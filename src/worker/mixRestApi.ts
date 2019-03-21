@@ -5,12 +5,19 @@ import config from "../utils/config";
 import { readFileSync } from "fs";
 import ini = require("ini");
 
-function getApiKey() : string {
+function getLocalCredentials() : any {
     const workspacePath = getWorkspacePath();
     const credentialsPath = workspacePath + "\\..\\mix\\python\\credentials.local";
     const encoding = config.encoding;
-    const credentials = ini.parse(readFileSync(credentialsPath, encoding));
+    return ini.parse(readFileSync(credentialsPath, encoding));    
+}
+
+function getApiKey(credentials :any) : string {
     return credentials.Edge.api_key;
+}
+
+function getServerUrl(credentials : any) : string {
+    return credentials.Edge.server_url;
 }
 
 function getProjectId(domain : string | undefined) {
@@ -49,11 +56,11 @@ export function getConcepts(res : any, type: string) : any {
 }
 
 export async function getDialogInteractions(domain : string | undefined) : Promise<any> {
-    let projectId = getProjectId(domain);
-
-    let baseUrl = `http://10.56.10.112:443/api/v1/projects/${projectId}/dialogs/interactions`;
-
-    const apiKey = getApiKey();
+    const projectId = getProjectId(domain);
+    const credentials = getLocalCredentials();
+    const apiKey = getApiKey(credentials);
+    const serverUrl = getServerUrl(credentials);
+    const baseUrl = `${serverUrl}/api/v1/projects/${projectId}/dialogs/interactions`;
 
     const queryString = '';
     // const queryString = '/20365492/localizedInteractions/20365493/escalationLevels/20365494/randomizations/20365507/facets/20365510';
