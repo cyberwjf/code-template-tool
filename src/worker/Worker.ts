@@ -10,6 +10,7 @@ import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
 import { getDialogInteractions, getConcepts } from './mixRestApi';
 import { showErrMsg, showInfoMsg } from '../utils/message';
+import getUpdatedConcepts from './getUpdatedConcepts';
 
 export default class Worker {
     public static getInstance(): Worker {
@@ -56,7 +57,7 @@ export default class Worker {
                 return;
             }
 
-            let res = await getDialogInteractions(domain);
+            const res = await getDialogInteractions(domain);
             let concepts : string[] | undefined = undefined;
 
             if (template['name'] === "Refinement Template") {
@@ -67,6 +68,11 @@ export default class Worker {
                 return;
             }
             if (!concepts) {
+                return;
+            }
+
+            const result = await getUpdatedConcepts(template.name, this.extensionContext.extensionPath);
+            if (result === 'cancel') {
                 return;
             }
 

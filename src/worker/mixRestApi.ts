@@ -50,9 +50,9 @@ export function getConcepts(res : any, type: string) : any {
     facets = facets.filter(function (object) {
         return object.type === type && object.content !== '';
     });
-    let refinements = jsonpath.query(facets, "$[*].content");
-    refinements = removeDuplicates(refinements);
-    return refinements;
+    let concepts = jsonpath.query(facets, "$[*].content");
+    concepts = removeDuplicates(concepts);
+    return concepts;
 }
 
 export async function getDialogInteractions(domain : string | undefined) : Promise<any> {
