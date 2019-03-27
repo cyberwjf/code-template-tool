@@ -23,55 +23,21 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.newFromTemplate",
-        "onCommand:extension.editTemplates",
-        "onCommand:extension.reloadTemplates"
+        "onCommand:extension.newQueryRefinement"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.newFromTemplate",
-                "title": "New File / Folder From Template",
-                "category": "template"
-            },
-            {
-                "command": "extension.editTemplates",
-                "title": "Edit Templates",
-                "category": "template"
-            },
-            {
-                "command": "extension.reloadTemplates",
-                "title": "Reload Templates",
+                "command": "extension.newQueryRefinement",
+                "title": "New Query / Refinement From Template",
                 "category": "template"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
-                    "command": "extension.newFromTemplate",
-                    "group": "navigation"
-                },
-                {
-                    "command": "extension.editTemplates",
-                    "group": "navigation"
-                },
-                {
-                    "command": "extension.reloadTemplates",
-                    "group": "navigation"
-                }
-            ],
-            "editor/context": [
-                {
-                    "command": "extension.newFromTemplate",
-                    "group": "navigation"
-                },
-                {
-                    "command": "extension.editTemplates",
-                    "group": "navigation"
-                },
-                {
-                    "command": "extension.reloadTemplates",
+                    "command": "extension.newQueryRefinement",
                     "group": "navigation"
                 }
             ]

@@ -10,6 +10,7 @@ const commandTable: CommandTable = {
     'extension.newFromTemplate': newFromTemplate,
     'extension.editTemplates': editTemplates,
     'extension.reloadTemplates': reloadTemplates,
+    'extension.newQueryRefinement': newFromTemplate
 };
 
 export default commandTable;
