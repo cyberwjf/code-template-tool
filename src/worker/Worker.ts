@@ -3,7 +3,7 @@ import { existsSync } from 'fs';
 import { isDirectory, mkdirp } from '../utils/fs';
 import { NotDirError } from '../utils/error';
 import config from '../utils/config';
-import { ITemplateTable, IUserInputResponseDTO, IVariableDTO, IIdentifierStyleDTO } from '../model/types';
+import { ITemplateTable, IUserInputResponseDTO, IVariableDTO, IIdentifierStyleDTO, ITemplate } from '../model/types';
 import TemplateTable from '../model/TemplateTable';
 import CodesGenerator from './CodesGenerator';
 import selectTemplate from './selectTemplate';
@@ -71,8 +71,16 @@ export default class Worker {
                 return;
             }
 
-            const result = await getUpdatedConcepts(template.name, this.extensionContext.extensionPath);
-            if (result === 'cancel') {
+            let existingConcepts: string[] = await this.getExistingConcepts(concepts, destDir, template);
+
+            concepts = concepts.filter((value) => {
+                if (existingConcepts.indexOf(value) === -1) {
+                    return value;
+                }
+            });
+
+            const result = await getUpdatedConcepts(template.name, this.extensionContext.extensionPath, concepts, existingConcepts);
+            if (result === 'cancel' || concepts.length === 0) {
                 return;
             }
 
@@ -125,6 +133,36 @@ export default class Worker {
     }
 
     private constructor() {}
+
+    private async getExistingConcepts(concepts: string[], destDir: string, template: ITemplate) {
+        const style : IIdentifierStyleDTO = {case: "AUTO", keepUpperCase: false, noTransformation: false, prefix: "", suffix: ""};
+        let existingConcepts: string[] = [];
+        for (let concept of concepts) {
+            let variables: IVariableDTO[] = [{
+                name: 'conceptName',
+                style: style,
+                value: concept
+            },
+            {
+                name: 'domainName',
+                style: style,
+                value: this.getDomainName(destDir)
+            }
+            ];
+            if (variables) {
+                template.assignVariables(variables);
+            }
+            const destDirPath = destDir;
+            const codesGenerator = new CodesGenerator(template, destDirPath);
+            try {
+                await codesGenerator.dryRun();
+            }
+            catch (e) {
+                existingConcepts.push(concept);
+            }
+        }
+        return existingConcepts;
+    }
 
     private async initTemplates() {
         this._templatesPath = config.templatesPath;

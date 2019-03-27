@@ -7,9 +7,30 @@ interface ResolveUri {
 
 const cssDiskPath = 'resource/css/index.css';
 
+function getTextContent(concepts: string[],
+    existingConcepts: string[]) : string {
+        let result = '';
+        if (concepts && concepts.length !== 0) {
+            result += 'About to generate code template for ' + concepts.join(', ') + '.';
+        } else {
+            result += 'No concept needs to be generated.';
+        }
+
+        if (existingConcepts && existingConcepts.length === 1) {
+            result += ' ';
+            result += existingConcepts[0] + ' is already existing.';
+        } else if (existingConcepts && existingConcepts.length > 1) {
+            result += ' ';
+            result += existingConcepts.join(', ') + ' are already existing.';
+        }
+
+        return result;
+    }
+
 function getWebviewContent(
     templateName: string,
-    resolveUri: ResolveUri
+    resolveUri: ResolveUri,
+    textContent: string
 ) {
     return `
 <!DOCTYPE html>
@@ -22,7 +43,9 @@ function getWebviewContent(
     </head>
     <body>
         <div id="user-input-root">
-            <h1 id="info"></h1>
+            <div class="user-input-header">
+                <h1 id="info"/>
+            </div>
             <div class="user-input-submit-btns">
                 <button class="user-input-confirm-btn">Confirm</button>
                 <button class="user-input-cancel-btn">Cancel</button>
@@ -31,7 +54,7 @@ function getWebviewContent(
         <script>
             top.vscode = acquireVsCodeApi();
             const info = document.getElementById('info');
-            info.textContent = 'Hello WebView';
+            info.textContent = '${textContent}';
             const confirmBtnEl = document.querySelector('.user-input-confirm-btn');
             const cancelBtnEl = document.querySelector('.user-input-cancel-btn');
             confirmBtnEl.addEventListener('click', () => {top.vscode.postMessage('confirm');});
@@ -43,7 +66,9 @@ function getWebviewContent(
 
 export default function getUpdatedConcepts(
     templateName: string, 
-    extensionPath: string
+    extensionPath: string,
+    concepts: string[],
+    existingConcepts: string[]
 ): Promise<string | undefined> {
     
     function resolveUri(diskPath: string): Uri {
@@ -59,7 +84,8 @@ export default function getUpdatedConcepts(
             { enableScripts: true, retainContextWhenHidden: true }
         );
 
-        panel.webview.html = getWebviewContent(templateName, resolveUri);
+        const textContent = getTextContent(concepts, existingConcepts);
+        panel.webview.html = getWebviewContent(templateName, resolveUri, textContent);
         panel.webview.onDidReceiveMessage(response => {
             panel.dispose();
             if (response === 'cancel') {

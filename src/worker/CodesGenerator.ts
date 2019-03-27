@@ -17,6 +17,53 @@ export default class CodesGenerator {
         this._destDirPath = destDirPath;
     }
 
+    public async dryRun() {
+        const template = this._template;
+        const baseNames = await this.globDir(template.rootPath);
+        const srcBaseNames = baseNames.filter(
+            (fileName: string): boolean => fileName !== config.configFile
+        );
+
+        await Promise.all(
+            srcBaseNames.map((srcBaseName: string) => {
+                const srcPath = resolve(template.rootPath, srcBaseName);
+                const destBaseName = this.resolveVariable(srcBaseName, template.variableTable);
+                const destPath = resolve(this._destDirPath, destBaseName);
+                return this.generateTest(srcPath, destPath);
+            })
+        );
+    }
+
+    private async generateTest(srcPath: string, destPath: string) {
+        const exist = existsSync(destPath);
+        if(exist && !this._template.allowExistingFolder) {
+            throw new FileAlreadyExistsError(destPath);
+        }
+
+        if (statSync(srcPath).isDirectory()) {
+            if(!exist) {
+                await mkdirp(destPath);
+            }
+            const srcBaseNames = await this.globDir(srcPath);
+            await Promise.all(
+                srcBaseNames.map((srcBaseName: string) => {
+                    const destBaseName = this.resolveVariable(
+                        srcBaseName,
+                        this._template.variableTable
+                    );
+                    return this.generateTest(
+                        resolve(srcPath, srcBaseName),
+                        resolve(destPath, destBaseName)
+                    );
+                })
+            );
+        } else {
+            if(exist) {
+                throw new FileAlreadyExistsError(destPath);
+            }
+        }
+    }
+
     public async execute() {
         const template = this._template;
         const baseNames = await this.globDir(template.rootPath);
