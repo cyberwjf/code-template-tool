@@ -10,7 +10,7 @@ import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
 import { getRefinements, getQueries } from './mixRestApi';
 import { showErrMsg, showInfoMsg } from '../utils/message';
-import getUpdatedConcepts from './getUpdatedConcepts';
+import getUpdatedConcepts, { showErrorMessageBox } from './getUpdatedConcepts';
 
 export default class Worker {
     public static getInstance(): Worker {
@@ -67,12 +67,16 @@ export default class Worker {
             }
 
             let concepts : string[] | undefined = undefined;
-
-            if (template['name'] === "Refinement Template") {
-                concepts = await getRefinements(domain);
-            } else if (template['name'] === "Query Template") {
-                concepts = await getQueries(domain);
-            } else {
+            try {
+                if (template['name'] === "Refinement Template") {
+                    concepts = await getRefinements(domain);
+                } else if (template['name'] === "Query Template") {
+                    concepts = await getQueries(domain);
+                } else {
+                    return;
+                }
+            } catch (e) {
+                await showErrorMessageBox(template.name, this.extensionContext.extensionPath, e.message);
                 return;
             }
 

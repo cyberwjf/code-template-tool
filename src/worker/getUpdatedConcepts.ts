@@ -12,7 +12,8 @@ function getWebviewContent(
     templateName: string,
     resolveUri: ResolveUri,
     concepts: string[],
-    existingConcepts: string[]
+    existingConcepts: string[],
+    errorMessage: string | undefined
 ) {
     return `
     <!DOCTYPE html>
@@ -30,7 +31,7 @@ function getWebviewContent(
                 (function() {
                     const { templateUserInput } = top;
                     templateUserInput.start.bind(templateUserInput)(${JSON.stringify(
-                        {concepts, existingConcepts, templateName}
+                        {concepts, existingConcepts, templateName, errorMessage}
                     )});
                 })()
             </script>
@@ -38,11 +39,20 @@ function getWebviewContent(
     </html>`;
 }
 
+export function showErrorMessageBox(
+    templateName: string, 
+    extensionPath: string,
+    errorMessage: string
+) {
+    getUpdatedConcepts(templateName, extensionPath, [], [], errorMessage);
+}
+
 export default function getUpdatedConcepts(
     templateName: string, 
     extensionPath: string,
     concepts: string[],
-    existingConcepts: string[]
+    existingConcepts: string[],
+    errorMessage?: string
 ): Promise<string | undefined> {
     
     function resolveUri(diskPath: string): Uri {
@@ -58,7 +68,7 @@ export default function getUpdatedConcepts(
             { enableScripts: true, retainContextWhenHidden: true }
         );
 
-        panel.webview.html = getWebviewContent(templateName, resolveUri, concepts, existingConcepts);
+        panel.webview.html = getWebviewContent(templateName, resolveUri, concepts, existingConcepts, errorMessage);
         panel.webview.onDidReceiveMessage(response => {
             panel.dispose();
             if (response === 'cancel') {

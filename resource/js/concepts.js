@@ -5,7 +5,8 @@
         data: {
             concepts: [],
             existingConcepts: [],
-            templateName: ''
+            templateName: '',
+            errorMessage: ''
         },
 
         handleConfirm() {
@@ -17,7 +18,7 @@
         },
 
         render() {
-            const { concepts, existingConcepts, templateName } = this.data;
+            const { concepts, existingConcepts, templateName, errorMessage } = this.data;
 
             const conceptArr = Array.isArray(concepts) ? concepts : [];
             const conceptsHTML = conceptArr
@@ -28,7 +29,7 @@
                 )
                 .join('');
 
-            const conceptPanelHTML =
+            let conceptPanelHTML =
                 conceptArr.length > 0
                     ? `
                     <div class="user-input-panel">
@@ -45,6 +46,13 @@
                         <h3 class="user-input-panel-title">There're no concepts to be generated.</h3>
                     </div>
                     `;
+            if (errorMessage !== '') {
+                conceptPanelHTML = `
+                <div class="user-input-panel">
+                    <h3 class="user-input-panel-error">${errorMessage}</h3>
+                </div>                
+                `
+            }
 
             const existingConceptArr = Array.isArray(existingConcepts) ? existingConcepts : [];
             const existingConceptsHTML = existingConceptArr
@@ -106,12 +114,13 @@
         },
 
         start(userInputRequest) {
-            const { concepts, existingConcepts, templateName } = userInputRequest;
+            const { concepts, existingConcepts, templateName, errorMessage } = userInputRequest;
             const { data } = this;
 
             data.templateName = templateName;
             data.concepts = concepts || [];
             data.existingConcepts = existingConcepts || [];
+            data.errorMessage = errorMessage;
 
             this.render();
         },
