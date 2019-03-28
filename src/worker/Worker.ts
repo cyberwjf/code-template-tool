@@ -8,7 +8,7 @@ import TemplateTable from '../model/TemplateTable';
 import CodesGenerator from './CodesGenerator';
 import selectTemplate from './selectTemplate';
 import getUserInput from './getUserInput';
-import { getDialogInteractions, getConcepts } from './mixRestApi';
+import { getRefinements, getQueries } from './mixRestApi';
 import { showErrMsg, showInfoMsg } from '../utils/message';
 import getUpdatedConcepts from './getUpdatedConcepts';
 
@@ -38,12 +38,21 @@ export default class Worker {
         return destDir.split("\\").pop();
     }
 
-    public async generateCodes(destDir: string) {
+    public async generateCodes(destDir: string, templateName?: string) {
         const { templateTable } = this;
         
         const style : IIdentifierStyleDTO = {case: "AUTO", keepUpperCase: false, noTransformation: false, prefix: "", suffix: ""};
 
-        const template = templateTable.size() === 1 ? templateTable.entries()[0] : await selectTemplate(templateTable);
+        let template = undefined;
+        if (!templateName) {
+            template = templateTable.size() === 1 ? templateTable.entries()[0] : await selectTemplate(templateTable);
+            if (!template) {
+                return;
+            }
+        } else {
+            template = templateTable.getByName(templateName);
+        }
+
         if (!template) {
             return;
         }
@@ -57,57 +66,61 @@ export default class Worker {
                 return;
             }
 
-            const res = await getDialogInteractions(domain);
             let concepts : string[] | undefined = undefined;
 
             if (template['name'] === "Refinement Template") {
-                concepts = getConcepts(res, 'refinement');
+                concepts = await getRefinements(domain);
             } else if (template['name'] === "Query Template") {
-                concepts = getConcepts(res, 'query');
+                concepts = await getQueries(domain);
             } else {
                 return;
             }
-            if (!concepts) {
-                return;
+
+            let existingConcepts: string[] = [];
+
+            if (concepts) {
+                existingConcepts = await this.getExistingConcepts(concepts, destDir, template);
+
+                concepts = concepts.filter((value) => {
+                    if (existingConcepts.indexOf(value) === -1) {
+                        return value;
+                    }
+                });
+            } else {
+                concepts = [];
             }
-
-            let existingConcepts: string[] = await this.getExistingConcepts(concepts, destDir, template);
-
-            concepts = concepts.filter((value) => {
-                if (existingConcepts.indexOf(value) === -1) {
-                    return value;
-                }
-            });
 
             const result = await getUpdatedConcepts(template.name, this.extensionContext.extensionPath, concepts, existingConcepts);
-            if (result === 'cancel' || concepts.length === 0) {
+            if (result === 'cancel' || (concepts && concepts.length === 0)) {
                 return;
             }
 
-            for (let concept of concepts) {
-                let variables: IVariableDTO[] = [ {
-                    name: 'conceptName',
-                    style: style,
-                    value: concept
-                },
-                {
-                    name: 'domainName',
-                    style: style,
-                    value: this.getDomainName(destDir)
-                }
+            if (concepts && concepts.length > 0) {
+                for (let concept of concepts) {
+                    let variables: IVariableDTO[] = [ {
+                        name: 'conceptName',
+                        style: style,
+                        value: concept
+                    },
+                    {
+                        name: 'domainName',
+                        style: style,
+                        value: this.getDomainName(destDir)
+                    }
 
-                ];
+                    ];
 
-                if (variables) {
-                    template.assignVariables(variables);
-                }
+                    if (variables) {
+                        template.assignVariables(variables);
+                    }
 
-                const destDirPath = destDir;
-                const codesGenerator = new CodesGenerator(template, destDirPath);
-                try {
-                    await codesGenerator.execute();
-                } catch (e) {
-                    showInfoMsg("File already exists!");
+                    const destDirPath = destDir;
+                    const codesGenerator = new CodesGenerator(template, destDirPath);
+                    try {
+                        await codesGenerator.execute();
+                    } catch (e) {
+                        showInfoMsg("File already exists!");
+                    }
                 }
             }
         } else {

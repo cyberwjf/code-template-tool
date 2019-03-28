@@ -23,21 +23,31 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.newQueryRefinement"
+        "onCommand:extension.newQueryFromTemplate",
+        "onCommand:extension.newRefinementFromTemplate"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.newQueryRefinement",
-                "title": "New Query / Refinement From Template",
+                "command": "extension.newQueryFromTemplate",
+                "title": "New Query From Template",
+                "category": "template"
+            },
+            {
+                "command": "extension.newRefinementFromTemplate",
+                "title": "New Refinement From Template",
                 "category": "template"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
-                    "command": "extension.newQueryRefinement",
+                    "command": "extension.newQueryFromTemplate",
+                    "group": "navigation"
+                },
+                {
+                    "command": "extension.newRefinementFromTemplate",
                     "group": "navigation"
                 }
             ]

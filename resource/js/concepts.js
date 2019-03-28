@@ -40,7 +40,11 @@
                         </div>
                     </div>
                     `
-                    : '';
+                    : `
+                    <div class="user-input-panel">
+                        <h3 class="user-input-panel-title">There're no concepts to be generated.</h3>
+                    </div>
+                    `;
 
             const existingConceptArr = Array.isArray(existingConcepts) ? existingConcepts : [];
             const existingConceptsHTML = existingConceptArr
@@ -67,6 +71,7 @@
 
             const confirmButtonHTML = conceptArr.length > 0
             ? '<button class="user-input-confirm-btn">Confirm</button>' : '';
+            const cancelButtonText = conceptArr.length > 0 ? 'Cancel' : 'OK';
 
             const rootEl = document.getElementById('user-input-root');
             rootEl.innerHTML = `
@@ -79,7 +84,7 @@
 
                 <div class="user-input-submit-btns">
                     ${confirmButtonHTML}
-                    <button class="user-input-cancel-btn">Cancel</button>
+                    <button class="user-input-cancel-btn">${cancelButtonText}</button>
                 </div>`;
             
             if (conceptArr.length > 0) {
