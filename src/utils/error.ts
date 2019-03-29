@@ -2,7 +2,7 @@ import { resolve } from 'path';
 
 export class NotAValidDomainError extends Error {
     constructor(domain: string) {
-        super(`InvalidDomainError: ENOTEXIST: Domain ${domain} not exists`);
+        super(`InvalidDomainError: ENOTEXIST: Domain '${domain}' does not exist`);
     }
 }
 

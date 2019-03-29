@@ -46,7 +46,7 @@
                         <h3 class="user-input-panel-title">There're no concepts to be generated.</h3>
                     </div>
                     `;
-            if (errorMessage !== '') {
+            if (errorMessage !== undefined && errorMessage !== '') {
                 conceptPanelHTML = `
                 <div class="user-input-panel">
                     <h3 class="user-input-panel-error">${errorMessage}</h3>
