@@ -19,11 +19,11 @@ function getLocalCredentials() : any {
 }
 
 function getApiKey(credentials :any) : string {
-    return credentials.Edge.api_key;
+    return credentials[credentials.General.mix_env].api_key;
 }
 
 function getServerUrl(credentials : any) : string {
-    return credentials.Edge.server_url;
+    return credentials[credentials.General.mix_env].server_url;
 }
 
 function getProjectId(domain : string | undefined) : string {
