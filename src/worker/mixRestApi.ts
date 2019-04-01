@@ -81,7 +81,6 @@ async function getDialogContentByQuery(domain : string | undefined,
     const serverUrl = getServerUrl(credentials);
     const baseUrl = serverUrl + '/api/v1/projects/' + projectId;
 
-    // const queryString = '/20365492/localizedInteractions/20365493/escalationLevels/20365494/randomizations/20365507/facets/20365510';
     const options = {
         method: 'GET',
         uri: baseUrl + queryString,
