@@ -6,9 +6,9 @@ import { readFileSync, existsSync } from "fs";
 import ini = require("ini");
 import { FileNotExistsError, NotAValidDomainError } from "../utils/error";
 
-function getLocalCredentials() : any {
+function getCredentials(path: string) : any {
     const workspacePath = getWorkspacePath();
-    const credentialsPath = workspacePath + "\\..\\mix\\python\\credentials.local";
+    const credentialsPath = workspacePath + "\\" + path;
     const encoding = config.encoding;
 
     if (!existsSync(credentialsPath)) {
@@ -18,12 +18,16 @@ function getLocalCredentials() : any {
     return ini.parse(readFileSync(credentialsPath, encoding)); 
 }
 
-function getApiKey(credentials :any) : string {
-    return credentials[credentials.General.mix_env].api_key;
+function getServerTag(credentials: any) : string {
+    return credentials.General.mix_env;
 }
 
-function getServerUrl(credentials : any) : string {
-    return credentials[credentials.General.mix_env].server_url;
+function getApiKey(credentials :any, serverTag : string) : string {
+    return credentials[serverTag].api_key;
+}
+
+function getServerUrl(credentials : any, serverTag : string) : string {
+    return credentials[serverTag].server_url;
 }
 
 function getProjectId(domain : string | undefined) : string {
@@ -76,9 +80,12 @@ async function getDialogContentByQuery(domain : string | undefined,
     queryString: string
     ) : Promise<any> {
     const projectId = getProjectId(domain);
-    const credentials = getLocalCredentials();
-    const apiKey = getApiKey(credentials);
-    const serverUrl = getServerUrl(credentials);
+    let credentials = getCredentials("..\\mix\\python\\credentials.ini");
+    const serverTag = getServerTag(credentials);
+    const serverUrl = getServerUrl(credentials, serverTag);
+        credentials = getCredentials("..\\mix\\python\\credentials.local");
+    const apiKey = getApiKey(credentials, serverTag);
+    
     const baseUrl = serverUrl + '/api/v1/projects/' + projectId;
 
     const options = {
